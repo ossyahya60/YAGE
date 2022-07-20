@@ -12,22 +12,31 @@ namespace DataOrientedEngine.Engine
 
         internal bool Destroyed;
 
-        private BitArray Components;
+        private BitArray components;
+        private int[] componentIndex;
 
         public Entity()
         {
-            Components = new BitArray((Enum.GetValues(typeof(Components)).Length));
+            components = new BitArray(Enum.GetValues(typeof(Components)).Length);
             Active = true;
             Destroyed = false;
             Name = "Entity";
+            componentIndex = new int[Enum.GetValues(typeof(Components)).Length];
+
+            for (int i = 0; i < componentIndex.Length; i++)
+                componentIndex[i] = -1;
         }
 
         public Entity(string name)
         {
-            Components = new BitArray((Enum.GetValues(typeof(Components)).Length));
+            components = new BitArray(Enum.GetValues(typeof(Components)).Length);
             Active = true;
             Destroyed = false;
             Name = name;
+            componentIndex = new int[Enum.GetValues(typeof(Components)).Length];
+
+            for (int i = 0; i < componentIndex.Length; i++)
+                componentIndex[i] = -1;
         }
 
         public void AddComponent(Component component)
@@ -35,7 +44,12 @@ namespace DataOrientedEngine.Engine
             if (component.GetType().Name == "Component")
                 throw new Exception("You can't add a base component");
 
-            Components.Set((int)component.ComponentID, true);
+            if (componentIndex[(int)component.ComponentID] == -1)
+                throw new Exception("Component already exists in the entity");
+
+            //componentIndex[(int)component.ComponentID] = 
+
+            //components.Set((int)component.ComponentID, true);
         }
 
         public void RemoveComponent(Component component)
@@ -43,18 +57,18 @@ namespace DataOrientedEngine.Engine
             if (component.GetType().Name == "Component")
                 throw new Exception("You can't remove a base component");
 
-            Components.Set((int)component.ComponentID, false);
+            components.Set((int)component.ComponentID, false);
         }
 
         // Remove a component by type
         public void RemoveComponent(Components componentType)
         {
-            Components.Set((int)componentType, false);
+            components.Set((int)componentType, false);
         }
 
         public bool HasComponent(Components componentType)
         {
-            return Components[(int)componentType];
+            return components[(int)componentType];
         }
 
         public void Destroy() // Figure out a way to destroy all components

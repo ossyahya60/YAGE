@@ -18,7 +18,7 @@ namespace DataOrientedEngine.Components
             EntityID = entityID;
             ComponentID = Engine.Components.Movement;
 
-            Systems.MovementComps.Add(this); //should be changed
+            Systems.MovementComps.Insert(entityID, this); //should be changed
         }
 
         public Movement(int entityID, float posX, float posY)
@@ -30,7 +30,7 @@ namespace DataOrientedEngine.Components
             EntityID = entityID;
             ComponentID = Engine.Components.Movement;
 
-            Systems.MovementComps.Add(this); //should be changed
+            Systems.MovementComps.Insert(entityID, this); //should be changed
         }
     }
 }

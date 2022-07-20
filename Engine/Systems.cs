@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using DataOrientedEngine.Components;
+using DataOrientedEngine.Components.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -12,12 +13,14 @@ namespace DataOrientedEngine.Engine
         public static List<Movement> MovementComps;
         public static List<SpriteRenderer> SpriteRendererComps;
         public static List<Animator> AnimatorComps;
+        public static List<Text> TextComps;
 
         static Systems()
         {
             MovementComps = new List<Movement>(initialCapacity);
             SpriteRendererComps = new List<SpriteRenderer>(initialCapacity);
             AnimatorComps = new List<Animator>(initialCapacity);
+            TextComps = new List<Text>(initialCapacity);
         }
 
         // Movement System
@@ -93,6 +96,20 @@ namespace DataOrientedEngine.Engine
                             animation.Accumulator += deltaTime * animation.Speed;
                         }
                     }
+                }
+            }
+        }
+
+        // This system renders text to screen space
+        public static void TextRendering(SpriteBatch spriteBatch)
+        {
+            foreach (Text txt in TextComps)
+            {
+                Entity entity = Scene.ActiveScene.GetEntityWithID(txt.EntityID);
+
+                if (entity.Active && txt.Enabled)
+                {
+                    spriteBatch.DrawString(txt.Font, txt.TEXT, txt.Position, txt.Color, txt.Rotation, txt.Origin, txt.Scale, txt.SpriteEffects, 0);
                 }
             }
         }

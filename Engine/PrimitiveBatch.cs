@@ -13,6 +13,7 @@
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 #endregion
 
 namespace DataOrientedEngine.Engine
@@ -236,6 +237,13 @@ namespace DataOrientedEngine.Engine
             return numVertsPerPrimitive;
         }
 
+        private int getPt(int n1, int n2, float perc)
+        {
+            int diff = n2 - n1;
+
+            return (int)(n1 + (diff * perc));
+        }
+
         #endregion
 
         #region Shapes
@@ -258,7 +266,72 @@ namespace DataOrientedEngine.Engine
         }
 
         /// <summary>
-        /// Draw rounded rectangle
+        /// Draw a solid triangle, PrimitiveType has to be TriangleList
+        /// </summary>
+        /// <param name="rectangle"></param>
+        /// <param name="color"></param>
+        public void DrawRectangleSolid(Rectangle rectangle, Color color)
+        {
+            AddVertex(rectangle.Location.ToVector2(), color);
+            AddVertex(new Vector2(rectangle.Right, rectangle.Top), color);
+            AddVertex(new Vector2(rectangle.Right, rectangle.Bottom), color);
+            AddVertex(new Vector2(rectangle.Right, rectangle.Bottom), color);
+            AddVertex(new Vector2(rectangle.Left, rectangle.Bottom), color);
+            AddVertex(rectangle.Location.ToVector2(), color);
+        }
+
+        /// <summary>
+        /// Draw a horizontal pipe, PrimitiveType has to be LineList
+        /// </summary>
+        /// <param name="rectangle"></param>
+        /// <param name="color"></param>
+        public void DrawPipeH(Rectangle rectangle, Color color)
+        {
+            AddVertex(rectangle.Location.ToVector2(), color);
+            AddVertex(new Vector2(rectangle.Right, rectangle.Top), color);
+            AddVertex(new Vector2(rectangle.Right, rectangle.Bottom), color);
+            AddVertex(new Vector2(rectangle.Left, rectangle.Bottom), color);
+        }
+
+        /// <summary>
+        /// Draw a vertical pipe, PrimitiveType has to be LineList
+        /// </summary>
+        /// <param name="rectangle"></param>
+        /// <param name="color"></param>
+        public void DrawPipeV(Rectangle rectangle, Color color)
+        {
+            AddVertex(rectangle.Location.ToVector2(), color);
+            AddVertex(new Vector2(rectangle.Left, rectangle.Bottom), color);
+            AddVertex(new Vector2(rectangle.Right, rectangle.Top), color);
+            AddVertex(new Vector2(rectangle.Right, rectangle.Bottom), color);
+        }
+
+        /// <summary>
+        /// Draw a horizontal shell of a pipe, PrimitiveType has to be TriangleList
+        /// </summary>
+        /// <param name="innerPipe"></param>
+        /// <param name="outerPipeMargin"></param>
+        /// <param name="color"></param>
+        public void DrawPipeShellH(Rectangle innerPipe, int outerPipeMargin, Color color)
+        {
+            DrawRectangleSolid(new Rectangle(innerPipe.X, innerPipe.Y - outerPipeMargin, innerPipe.Width, outerPipeMargin), color);
+            DrawRectangleSolid(new Rectangle(innerPipe.X, innerPipe.Bottom, innerPipe.Width, outerPipeMargin), color);
+        }
+
+        /// <summary>
+        /// Draw a vertical shell of a pipe, PrimitiveType has to be TriangleList
+        /// </summary>
+        /// <param name="innerPipe"></param>
+        /// <param name="outerPipeMargin"></param>
+        /// <param name="color"></param>
+        public void DrawPipeShellV(Rectangle innerPipe, int outerPipeMargin, Color color)
+        {
+            DrawRectangleSolid(new Rectangle(innerPipe.X - outerPipeMargin, innerPipe.Y, outerPipeMargin, innerPipe.Height), color);
+            DrawRectangleSolid(new Rectangle(innerPipe.Right , innerPipe.Y, outerPipeMargin, innerPipe.Height), color);
+        }
+
+        /// <summary>
+        /// Draw rounded rectangle, PrimitiveType has to be LineList
         /// </summary>
         /// <param name="rectangle"></param>
         /// <param name="roundedness ranges from 0 to 1, 0 is full rectangle, 1 is a complete circle"></param>
@@ -280,6 +353,74 @@ namespace DataOrientedEngine.Engine
             AddVertex(new Vector2(rectangle.Left + radius, rectangle.Bottom), color);
             AddVertex(new Vector2(rectangle.Left, rectangle.Bottom - radius), color);
             AddVertex(new Vector2(rectangle.Left, rectangle.Top + radius), color);
+        }
+
+        /// <summary>
+        /// Draws a line with thickness, PrimitiveType has to be TriangleList
+        /// </summary>
+        /// <param name="p1"></param>
+        /// <param name="p2"></param>
+        /// <param name="thickness"></param>
+        /// <param name="color"></param>
+        public void DrawSolidLine(Vector2 p1, Vector2 p2, int thickness, Color color)
+        {
+            Vector2 direction = Vector2.Normalize(p2 - p1);
+            Vector2 magnitude = new Vector2(-direction.Y, direction.X) * thickness;
+
+            AddVertex(p1, color);
+            AddVertex(magnitude + p1, color);
+            AddVertex(magnitude + p2, color);
+
+            AddVertex(p1, color);
+            AddVertex(p2, color);
+            AddVertex(magnitude + p2, color);
+        }
+
+        /// <summary>
+        /// Draw a rotated rectangle, PrimitiveType has to be TriangleList
+        /// </summary>
+        /// <param name="rectangle"></param>
+        /// <param name="rotation"></param>
+        /// <param name="thickness"></param>
+        /// <param name="color"></param>
+        public void DrawRotatedHollowRectangle(Rectangle rectangle, float rotation, int thickness, Color color)
+        {
+            Vector2 pointA = Vector2.Zero;
+            Vector2 pointB = Vector2.Zero;
+            Vector2 pointC = Vector2.Zero;
+            Vector2 pointD = Vector2.Zero;
+
+            pointA = rectangle.Location.ToVector2();
+            pointB = pointA + new Vector2(rectangle.Width * (float)Math.Cos(rotation), rectangle.Width * (float)System.Math.Sin(rotation));
+            pointC = pointB + new Vector2(rectangle.Height * (float)Math.Cos(rotation + MathHelper.PiOver2), rectangle.Height * (float)Math.Sin(rotation + MathHelper.Pi / 2));
+            pointD = pointC + new Vector2(rectangle.Width * (float)Math.Cos(rotation + MathHelper.Pi), rectangle.Width * (float)Math.Sin(rotation + MathHelper.Pi));
+
+            DrawSolidLine(pointA, pointB, thickness, color);
+            DrawSolidLine(pointB, pointC, thickness, color);
+            DrawSolidLine(pointD, pointC, thickness, color);
+            DrawSolidLine(pointA, pointD, thickness, color);
+        }
+
+        /// <summary>
+        /// Draw rounded rectangle with borders, PrimitiveType has to be TriangleList
+        /// </summary>
+        /// <param name="rectangle"></param>
+        /// <param name="roundedness"></param>
+        /// <param name="borderThickness"></param>
+        /// <param name="color"></param>
+        public void DrawRoundedRectangleWithBorders(Rectangle rectangle, float roundedness, int borderThickness, Color color)
+        {
+            int radius = (int)(MathHelper.Clamp(roundedness, 0, (float)MathHelper.Min(rectangle.Width, rectangle.Height) / MathHelper.Max(rectangle.Width, rectangle.Height)) * rectangle.Width * 0.5f);
+
+            DrawSolidHollowArc(new Vector2(rectangle.Left + radius, rectangle.Top + radius), radius - borderThickness, radius, (float)Math.PI, (float)Math.PI * 3 / 2, 32, color);
+            DrawSolidHollowArc(new Vector2(rectangle.Right - radius, rectangle.Top + radius), radius - borderThickness, radius, (float)Math.PI * 3 / 2, (float)Math.PI * 2, 32, color);
+            DrawSolidHollowArc(new Vector2(rectangle.Right - radius, rectangle.Bottom - radius), radius - borderThickness, radius, 0, (float)Math.PI / 2, 32, color);
+            DrawSolidHollowArc(new Vector2(rectangle.Left + radius, rectangle.Bottom - radius), radius - borderThickness, radius, (float)Math.PI / 2, (float)Math.PI, 32, color);
+
+            DrawSolidRectangle(new Rectangle(rectangle.Left + radius, rectangle.Top, rectangle.Width - 2 * radius, borderThickness), color);
+            DrawSolidRectangle(new Rectangle(rectangle.Right - borderThickness, rectangle.Top + radius, borderThickness, rectangle.Height - 2 * radius), color);
+            DrawSolidRectangle(new Rectangle(rectangle.Left + radius, rectangle.Bottom - borderThickness, rectangle.Width - 2 * radius, borderThickness), color);
+            DrawSolidRectangle(new Rectangle(rectangle.Left, rectangle.Top + radius, borderThickness, rectangle.Height - 2 * radius), color);
         }
 
         /// <summary>
@@ -325,16 +466,16 @@ namespace DataOrientedEngine.Engine
         /// <param name="endAngle"></param>
         /// <param name="numberOfLines"></param>
         /// <param name="color"></param>
-        public void DrawArc(Vector2 center, int radius, float startAngle, float endAngle, int numberOfLines, Color color)
+        public void DrawArc(Vector2 center, int radius, float startAngle, float endAngle, int numberOfLines, Color color, bool flipX = false)
         {
             float Theta = startAngle;
             float Increment = (endAngle - startAngle) / numberOfLines;
 
             for (int i = 0; i < numberOfLines; i++)
             {
-                AddVertex(new Vector2((float)Math.Cos(Theta), (float)Math.Sin(Theta)) * radius + center, color);
+                AddVertex(new Vector2(flipX? -(float)Math.Cos(Theta) : (float)Math.Cos(Theta), (float)Math.Sin(Theta)) * radius + center, color);
                 Theta += Increment;
-                AddVertex(new Vector2((float)Math.Cos(Theta), (float)Math.Sin(Theta)) * radius + center, color);
+                AddVertex(new Vector2(flipX ? -(float)Math.Cos(Theta) : (float)Math.Cos(Theta), (float)Math.Sin(Theta)) * radius + center, color);
             }
         }
 
@@ -348,10 +489,10 @@ namespace DataOrientedEngine.Engine
         /// <param name="endAngle"></param>
         /// <param name="numberOfLines"></param>
         /// <param name="color"></param>
-        public void DrawShellArc(Vector2 center, int innerRadius, int outerRadius, float startAngle, float endAngle, int numberOfLines, Color color)
+        public void DrawShellArc(Vector2 center, int innerRadius, int outerRadius, float startAngle, float endAngle, int numberOfLines, Color color, bool flipX = false)
         {
-            DrawArc(center, innerRadius, startAngle, endAngle, numberOfLines, color);
-            DrawArc(center, outerRadius, startAngle, endAngle, numberOfLines, color);
+            DrawArc(center, innerRadius, startAngle, endAngle, numberOfLines, color, flipX);
+            DrawArc(center, outerRadius, startAngle, endAngle, numberOfLines, color, flipX);
         }
 
         /// <summary>
@@ -366,8 +507,7 @@ namespace DataOrientedEngine.Engine
         public void DrawSolidArc(Vector2 center, int radius, float startAngle, float endAngle, int numberOfLines, Color color)
         {
             float Theta = startAngle;
-            float Increment = 2 * (float)Math.PI / numberOfLines;
-            numberOfLines = (int)(numberOfLines * endAngle / (2 * (float)Math.PI));
+            float Increment = (endAngle - startAngle) / numberOfLines;
 
             for (int i = 0; i < numberOfLines; i++)
             {
@@ -391,8 +531,7 @@ namespace DataOrientedEngine.Engine
         public void DrawSolidHollowArc(Vector2 center, int innerRadius, int outerRadius, float startAngle, float endAngle, int numberOfLines, Color color)
         {
             float Theta = startAngle;
-            float Increment = 2 * (float)Math.PI / numberOfLines;
-            numberOfLines = (int)(numberOfLines * endAngle / (2 * (float)Math.PI));
+            float Increment = (endAngle - startAngle) / numberOfLines;
 
             for (int i = 0; i < numberOfLines; i++)
             {
@@ -469,6 +608,51 @@ namespace DataOrientedEngine.Engine
             AddVertex(new Vector2(rectangle.Right, rectangle.Bottom), color);
             AddVertex(new Vector2(rectangle.Left, rectangle.Bottom), color);
             AddVertex(rectangle.Location.ToVector2(), color);
+        }
+
+        /// <summary>
+        /// Draw a quadratic bezier curve, PrimitiveType has to be TriangleList
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="control"></param>
+        /// <param name="end"></param>
+        /// <param name="thickness"></param>
+        /// <param name="color"></param>
+        /// <param name="quality"></param>
+        public void BezierLine(Point start, Point control, Point end, int thickness, Color color, int quality = 10)
+        {
+            Point Auxilary = Point.Zero;
+            Point PrevPoint = Point.Zero;
+
+            // The Green Line
+            int xa = getPt(start.X, control.X, 0);
+            int ya = getPt(start.Y, control.Y, 0);
+            int xb = getPt(control.X, end.X, 0);
+            int yb = getPt(control.Y, end.Y, 0);
+
+            // The Black Dot
+            Auxilary.X = getPt(xa, xb, 0);
+            Auxilary.Y = getPt(ya, yb, 0);
+
+            for (float i = 1.0f / quality; i <= 1.01f; i += 1.0f / quality)
+            {
+                // The Green Line
+                xa = getPt(start.X, control.X, i);
+                ya = getPt(start.Y, control.Y, i);
+                xb = getPt(control.X, end.X, i);
+                yb = getPt(control.Y, end.Y, i);
+
+                PrevPoint = Auxilary;
+
+                // The Black Dot
+                Auxilary.X = getPt(xa, xb, i);
+                Auxilary.Y = getPt(ya, yb, i);
+
+                Vector2 direction = Vector2.Normalize((Auxilary - PrevPoint).ToVector2());
+                Vector2 magnitude = new Vector2(-direction.Y, direction.X) * thickness * 0.5f;
+
+                DrawSolidLine(PrevPoint.ToVector2() - magnitude, Auxilary.ToVector2() - magnitude, thickness, color);
+            }
         }
 
         #endregion

@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using DataOrientedEngine.Engine;
 using DataOrientedEngine.Components;
+using DataOrientedEngine.Components.UI;
 
 namespace DataOrientedEngine
 {
@@ -14,7 +15,8 @@ namespace DataOrientedEngine
 
         private Scene mainScene;
         private Color clearColor;
-        private float roundedness = 0;
+        private float roundedness = 0.5f;
+        private SpriteFont Font;
 
         public Main()
         {
@@ -31,7 +33,14 @@ namespace DataOrientedEngine
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+            //_graphics.GraphicsProfile = GraphicsProfile.HiDef;
+            //_graphics.PreferMultiSampling = true;
+            //GraphicsDevice.PresentationParameters.MultiSampleCount = 8;
+            //_graphics.ApplyChanges();
+
             clearColor = new Color(0xff181818);
+
+            Font = Content.Load<SpriteFont>("Font");
 
             mainScene = new Scene("Main Scene");
             Scene.ActiveScene = mainScene;
@@ -40,10 +49,7 @@ namespace DataOrientedEngine
             mainScene.AddEntity(simpleEntity);
 
             simpleEntity.AddComponent(new Movement(simpleEntity.ID, 100, 150));
-            simpleEntity.AddComponent(new SpriteRenderer(simpleEntity.ID, Content.Load<Texture2D>("TileSet1")) { Scale = Vector2.One * 2});
-            simpleEntity.AddComponent(new Animator(simpleEntity.ID));
-            Systems.AnimatorComps[simpleEntity.ID].Animations.Add("Acid", new DataOrientedEngine.Components.Utility.Animation("Acid", new Rectangle[] { new Rectangle(0, 0, 64, 64), new Rectangle(64, 0, 64, 64), new Rectangle(128, 0, 64, 64), new Rectangle(192, 0, 64, 64), new Rectangle(256, 0, 64, 64) }) { Loop = true, Speed = 2 });
-            Systems.AnimatorComps[simpleEntity.ID].Play("Acid");
+            simpleEntity.AddComponent(new Text(simpleEntity.ID, Font, "Hello World", Vector2.Zero) { Color = Color.LightGreen });
 
             base.Initialize();
         }
@@ -64,22 +70,10 @@ namespace DataOrientedEngine
             // TODO: Add your update logic here
             Scene.ActiveScene.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
-            if (Keyboard.GetState().IsKeyDown(Keys.D))
-                Systems.MovementComps[0].DeltaX += (float)gameTime.ElapsedGameTime.TotalSeconds * 50;
-            if (Keyboard.GetState().IsKeyDown(Keys.A))
-                Systems.MovementComps[0].DeltaX -= (float)gameTime.ElapsedGameTime.TotalSeconds * 50;
-            if (Keyboard.GetState().IsKeyDown(Keys.S))
-                Systems.MovementComps[0].DeltaY += (float)gameTime.ElapsedGameTime.TotalSeconds * 50;
-            if (Keyboard.GetState().IsKeyDown(Keys.W))
-                Systems.MovementComps[0].DeltaY -= (float)gameTime.ElapsedGameTime.TotalSeconds * 50;
-
             if (Keyboard.GetState().IsKeyDown(Keys.Up))
                 roundedness += (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (Keyboard.GetState().IsKeyDown(Keys.Down))
                 roundedness -= (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-            if (Mouse.GetState().LeftButton == ButtonState.Pressed)
-                Systems.AnimatorComps[0].Play("Acid");
 
             base.Update(gameTime);
         }
@@ -89,13 +83,23 @@ namespace DataOrientedEngine
             GraphicsDevice.Clear(clearColor);
 
             // TODO: Add your drawing code here
+            // Scene
             Scene.ActiveScene.Draw(_spriteBatch);
 
-            _primitiveBatch.Begin(PrimitiveType.LineList);
+            // Primitives
+            _primitiveBatch.Begin(PrimitiveType.TriangleList);
 
-            _primitiveBatch.DrawRoundedRectangle(new Rectangle(50, 50, 200, 100), roundedness, Color.White);
+            _primitiveBatch.BezierLine(new Point(50, 50), Mouse.GetState().Position, new Point(150, 50), 5, Color.White, 16);
 
             _primitiveBatch.End();
+
+            // UI
+            _spriteBatch.Begin();
+
+            Systems.TextRendering(_spriteBatch);
+
+            _spriteBatch.End();
+
 
             base.Draw(gameTime);
         }

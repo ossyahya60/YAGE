@@ -13,7 +13,10 @@ namespace DataOrientedEngine.Engine
     {
         Movement,
         SpriteRenderer,
-        Animator
+        Animator,
+
+        // UI
+        Text
     }
 
     public class Component
