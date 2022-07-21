@@ -9,15 +9,12 @@ namespace DataOrientedEngine.Engine
         public int ID;
         public string Name;
         public bool Active;
+        public int[] componentIndex;
 
         internal bool Destroyed;
 
-        private BitArray components;
-        private int[] componentIndex;
-
         public Entity()
         {
-            components = new BitArray(Enum.GetValues(typeof(Components)).Length);
             Active = true;
             Destroyed = false;
             Name = "Entity";
@@ -29,7 +26,6 @@ namespace DataOrientedEngine.Engine
 
         public Entity(string name)
         {
-            components = new BitArray(Enum.GetValues(typeof(Components)).Length);
             Active = true;
             Destroyed = false;
             Name = name;
@@ -39,43 +35,14 @@ namespace DataOrientedEngine.Engine
                 componentIndex[i] = -1;
         }
 
-        public void AddComponent(Component component)
-        {
-            if (component.GetType().Name == "Component")
-                throw new Exception("You can't add a base component");
-
-            if (componentIndex[(int)component.ComponentID] == -1)
-                throw new Exception("Component already exists in the entity");
-
-            //componentIndex[(int)component.ComponentID] = 
-
-            //components.Set((int)component.ComponentID, true);
-        }
-
-        public void RemoveComponent(Component component)
-        {
-            if (component.GetType().Name == "Component")
-                throw new Exception("You can't remove a base component");
-
-            components.Set((int)component.ComponentID, false);
-        }
-
-        // Remove a component by type
-        public void RemoveComponent(Components componentType)
-        {
-            components.Set((int)componentType, false);
-        }
-
         public bool HasComponent(Components componentType)
         {
-            return components[(int)componentType];
+            return componentIndex[(int)componentType] != -1;
         }
 
         public void Destroy() // Figure out a way to destroy all components
         {
             Destroyed = true;
-
-            
         }
     }
 }

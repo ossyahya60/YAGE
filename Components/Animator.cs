@@ -17,7 +17,7 @@ namespace DataOrientedEngine.Components
             EntityID = entityID;
             ComponentID = Engine.Components.Animator;
 
-            Systems.AnimatorComps.Add(this); //should be changed
+            Systems.AnimatorComps[Systems.AddComponent(Scene.ActiveScene.GetEntityWithID(entityID), this)] = this;
         }
 
         public bool IsSomethingPlaying()

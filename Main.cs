@@ -48,8 +48,8 @@ namespace DataOrientedEngine
             Entity simpleEntity = new Entity("Example");
             mainScene.AddEntity(simpleEntity);
 
-            simpleEntity.AddComponent(new Movement(simpleEntity.ID, 100, 150));
-            simpleEntity.AddComponent(new Text(simpleEntity.ID, Font, "Hello World", Vector2.Zero) { Color = Color.LightGreen });
+            new Movement(simpleEntity.ID, 100, 150);
+            new Text(simpleEntity.ID, Font, "Hello World", Vector2.Zero) { Color = Color.LightGreen };
 
             base.Initialize();
         }

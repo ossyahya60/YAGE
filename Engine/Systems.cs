@@ -8,27 +8,91 @@ namespace DataOrientedEngine.Engine
 {
     public static class Systems
     {
-        private static readonly int initialCapacity = 50;
+        public static Movement[] MovementComps;
+        public static SpriteRenderer[] SpriteRendererComps;
+        public static Animator[] AnimatorComps;
+        public static Text[] TextComps;
 
-        public static List<Movement> MovementComps;
-        public static List<SpriteRenderer> SpriteRendererComps;
-        public static List<Animator> AnimatorComps;
-        public static List<Text> TextComps;
+        private static int[] lastAllocatedIndex;
+        private static Stack<int>[] freedComponents;
 
         static Systems()
         {
-            MovementComps = new List<Movement>(initialCapacity);
-            SpriteRendererComps = new List<SpriteRenderer>(initialCapacity);
-            AnimatorComps = new List<Animator>(initialCapacity);
-            TextComps = new List<Text>(initialCapacity);
+            Init();
+        }
+
+        private static void Init()
+        {
+            MovementComps = new Movement[Scene.MAX_ENTITIES];
+            SpriteRendererComps = new SpriteRenderer[Scene.MAX_ENTITIES];
+            AnimatorComps = new Animator[Scene.MAX_ENTITIES];
+            TextComps = new Text[Scene.MAX_ENTITIES];
+            lastAllocatedIndex = new int[System.Enum.GetValues(typeof(Components)).Length];
+            freedComponents = new Stack<int>[System.Enum.GetValues(typeof(Components)).Length];
+
+            for (int i = 0; i < freedComponents.Length; i++)
+                freedComponents[i] = new Stack<int>();
+        }
+
+        public static void Reset()
+        {
+            Init();
+        }
+
+        /// <summary>
+        /// returns the index of the component that should be added to the respective array system
+        /// </summary>
+        /// <param name="comps"></param>
+        /// <param name="entity"></param>
+        /// <param name="comp"></param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception"></exception>
+        public static int AddComponent(Entity entity, Component comp)
+        {
+            int compType = (int)comp.ComponentID;
+
+            if (entity.HasComponent(comp.ComponentID))
+                throw new System.Exception("Entity already has that component");
+
+            if (freedComponents[compType].Count > 0)
+            {
+                entity.componentIndex[compType] = freedComponents[compType].Pop();
+                return entity.componentIndex[compType];
+            }
+            else
+            {
+                entity.componentIndex[compType] = lastAllocatedIndex[compType]++;
+                return entity.componentIndex[compType];
+            }
+
+        }
+
+        /// <summary>
+        /// returns the index of the component from an entity if exists, you should remove it from the components array
+        /// </summary>
+        /// <param name="comps"></param>
+        /// <param name="entity"></param>
+        /// <param name="componentType"></param>
+        /// <exception cref="System.Exception"></exception>
+        public static int RemoveComponent(Entity entity, Components componentType)
+        {
+            if (!entity.HasComponent(componentType))
+                throw new System.Exception("Entity does not have that component");
+
+            freedComponents[(int)componentType].Push(entity.componentIndex[(int)componentType]);
+            return entity.componentIndex[(int)componentType];
         }
 
         // Movement System
         // This system is responsible for moving any entity in the scene
         public static void Movement()
         {
-            foreach (Movement m in MovementComps)
+            for (int i = 0; i < lastAllocatedIndex[(int)Components.Movement]; i++)
             {
+                Movement m = MovementComps[i];
+                if (m == null)
+                    continue;
+
                 Entity entity = Scene.ActiveScene.GetEntityWithID(m.EntityID);
 
                 if (entity.Active && m.Enabled)
@@ -45,8 +109,12 @@ namespace DataOrientedEngine.Engine
         // This system is responsible for rendering sprites on the screen
         public static void SpriteRenderer(SpriteBatch spriteBatch)
         {
-            foreach (SpriteRenderer sr in SpriteRendererComps)
+            for (int i = 0; i < lastAllocatedIndex[(int)Components.SpriteRenderer]; i++)
             {
+                SpriteRenderer sr = SpriteRendererComps[i];
+                if (sr == null)
+                    continue;
+
                 Entity entity = Scene.ActiveScene.GetEntityWithID(sr.EntityID);
 
                 if (entity.Active && sr.Enabled && entity.HasComponent(Components.Movement))
@@ -61,8 +129,12 @@ namespace DataOrientedEngine.Engine
         // This system is responsible for handling animations of an entity
         public static void Animation(float deltaTime)
         {
-            foreach (Animator A in AnimatorComps)
+            for (int i = 0; i < lastAllocatedIndex[(int)Components.Animator]; i++)
             {
+                Animator A = AnimatorComps[i];
+                if (A == null)
+                    continue;
+
                 Entity entity = Scene.ActiveScene.GetEntityWithID(A.EntityID);
 
                 if (entity.Active && A.Enabled)
@@ -103,8 +175,12 @@ namespace DataOrientedEngine.Engine
         // This system renders text to screen space
         public static void TextRendering(SpriteBatch spriteBatch)
         {
-            foreach (Text txt in TextComps)
+            for (int i = 0; i < lastAllocatedIndex[(int)Components.Text]; i++)
             {
+                Text txt = TextComps[i];
+                if (txt == null)
+                    continue;
+
                 Entity entity = Scene.ActiveScene.GetEntityWithID(txt.EntityID);
 
                 if (entity.Active && txt.Enabled)

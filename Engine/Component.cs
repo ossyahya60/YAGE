@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DataOrientedEngine.Engine
+﻿namespace DataOrientedEngine.Engine
 {
     // This class is the base class of all 
     // components, it contains the common data 

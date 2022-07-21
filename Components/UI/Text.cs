@@ -38,7 +38,7 @@ namespace DataOrientedEngine.Components.UI
             TEXT = new StringBuilder(text);
             SpriteEffects = SpriteEffects.None;
 
-            Systems.TextComps.Add(this);
+            Systems.TextComps[Systems.AddComponent(Scene.ActiveScene.GetEntityWithID(entityID), this)] = this;
         }
 
         public Text(int entityID, SpriteFont font, string text, Vector2 position, Vector2 origin)
@@ -54,7 +54,7 @@ namespace DataOrientedEngine.Components.UI
             TEXT = new StringBuilder(text);
             SpriteEffects = SpriteEffects.None;
 
-            Systems.TextComps.Add(this);
+            Systems.TextComps[Systems.AddComponent(Scene.ActiveScene.GetEntityWithID(entityID), this)] = this;
         }
 
         #endregion

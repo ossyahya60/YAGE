@@ -28,7 +28,7 @@ namespace DataOrientedEngine.Components
             Rotation = 0;
             ComponentID = Engine.Components.SpriteRenderer;
 
-            Systems.SpriteRendererComps.Add(this); //should be changed
+            Systems.SpriteRendererComps[Systems.AddComponent(Scene.ActiveScene.GetEntityWithID(entityID), this)] = this;
         }
 
         public SpriteRenderer(int entityID, Texture2D texture)
@@ -44,7 +44,7 @@ namespace DataOrientedEngine.Components
             Rotation = 0;
             ComponentID = Engine.Components.SpriteRenderer;
 
-            Systems.SpriteRendererComps.Add(this); //should be changed
+            Systems.SpriteRendererComps[Systems.AddComponent(Scene.ActiveScene.GetEntityWithID(entityID), this)] = this;
         }
     }
 }
