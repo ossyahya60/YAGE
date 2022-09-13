@@ -10,7 +10,7 @@
         Movement,
         SpriteRenderer,
         Animator,
-
+        ParticleGenerator,
         // UI
         Text
     }

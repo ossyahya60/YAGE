@@ -105,6 +105,7 @@ namespace DataOrientedEngine.Engine
             // Update all systems here, put them in whatever order seems fit
             Systems.Movement();
             Systems.Animation(deltaTime);
+            Systems.ParticleGenerationUpdate(deltaTime);
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -112,6 +113,7 @@ namespace DataOrientedEngine.Engine
             spriteBatch.Begin(SpriteSortMode.BackToFront, samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone);
 
             Systems.SpriteRenderer(spriteBatch);
+            Systems.ParticleGenerationDraw(spriteBatch);
 
             spriteBatch.End();
         }

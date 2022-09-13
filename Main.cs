@@ -48,8 +48,15 @@ namespace DataOrientedEngine
             Entity simpleEntity = new Entity("Example");
             mainScene.AddEntity(simpleEntity);
 
+            /*
+            _graphics.HardwareModeSwitch = false;
+            _graphics.IsFullScreen = true;
+            _graphics.ApplyChanges();
+            */
+
             new Movement(simpleEntity.ID, 100, 150);
-            new Text(simpleEntity.ID, Font, "Hello World", Vector2.Zero) { Color = Color.LightGreen };
+            new ParticleGenerator(simpleEntity.ID, GraphicsDevice);
+            new Text(simpleEntity.ID, Font, Mouse.GetState().Position.ToString(), Vector2.Zero) { Color = Color.LightGreen };
 
             base.Initialize();
         }
@@ -70,11 +77,6 @@ namespace DataOrientedEngine
             // TODO: Add your update logic here
             Scene.ActiveScene.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
-            if (Keyboard.GetState().IsKeyDown(Keys.Up))
-                roundedness += (float)gameTime.ElapsedGameTime.TotalSeconds;
-            if (Keyboard.GetState().IsKeyDown(Keys.Down))
-                roundedness -= (float)gameTime.ElapsedGameTime.TotalSeconds;
-
             base.Update(gameTime);
         }
 
@@ -89,7 +91,7 @@ namespace DataOrientedEngine
             // Primitives
             _primitiveBatch.Begin(PrimitiveType.TriangleList);
 
-            _primitiveBatch.BezierLine(new Point(50, 50), Mouse.GetState().Position, new Point(150, 50), 5, Color.White, 16);
+            //_primitiveBatch.BezierLine(new Point(50, 50), Mouse.GetState().Position, new Point(150, 50), 5, Color.White, 16);
 
             _primitiveBatch.End();
 

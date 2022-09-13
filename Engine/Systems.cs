@@ -11,6 +11,7 @@ namespace DataOrientedEngine.Engine
         public static Movement[] MovementComps;
         public static SpriteRenderer[] SpriteRendererComps;
         public static Animator[] AnimatorComps;
+        public static ParticleGenerator[] ParticleComps;
         public static Text[] TextComps;
 
         private static int[] lastAllocatedIndex;
@@ -26,6 +27,7 @@ namespace DataOrientedEngine.Engine
             MovementComps = new Movement[Scene.MAX_ENTITIES];
             SpriteRendererComps = new SpriteRenderer[Scene.MAX_ENTITIES];
             AnimatorComps = new Animator[Scene.MAX_ENTITIES];
+            ParticleComps = new ParticleGenerator[Scene.MAX_ENTITIES];
             TextComps = new Text[Scene.MAX_ENTITIES];
             lastAllocatedIndex = new int[System.Enum.GetValues(typeof(Components)).Length];
             freedComponents = new Stack<int>[System.Enum.GetValues(typeof(Components)).Length];
@@ -168,6 +170,63 @@ namespace DataOrientedEngine.Engine
                             animation.Accumulator += deltaTime * animation.Speed;
                         }
                     }
+                }
+            }
+        }
+
+        // This system is responsible for generating particles in space
+        public static void ParticleGenerationUpdate(float deltatime)
+        {
+            for (int i = 0; i < lastAllocatedIndex[(int)Components.ParticleGenerator]; i++)
+            {
+                ParticleGenerator PG = ParticleComps[i];
+                if (PG == null)
+                    continue;
+
+                Entity entity = Scene.ActiveScene.GetEntityWithID(PG.EntityID);
+
+                if (entity.Active && PG.Enabled)
+                {
+                    Movement movement = MovementComps[entity.ID];
+
+                    Vector2 referencePosition = new Vector2(movement.XPosition, movement.YPosition);
+                    Color[] pixels = new Color[PG.renderTarget.Width * PG.renderTarget.Height];
+
+                    for (int j = 0; j < ParticleGenerator.MAX_PARTICLES; j++)
+                    {
+                        Particle temp = PG.Particles[j];
+                        temp.Position += temp.Velocity * deltatime;
+
+                        if (temp.Position.X < -temp.SizeX + 1 || temp.Position.X > PG.renderTarget.Width - 1 || temp.Position.Y < -temp.SizeY + 1 || temp.Position.Y > PG.renderTarget.Height - 1)
+                            continue;
+
+                        /*
+                        for (int sx = 0; sx < temp.SizeX; sx++)
+                            pixels[(int)(temp.Position.Y * PG.renderTarget.Width + temp.Position.X + sx)] = temp.Color;
+                        for (int sy = 1; sy < temp.SizeY; sy++)
+                            pixels[(int)((temp.Position.Y + sy) * PG.renderTarget.Width + temp.Position.X)] = temp.Color;
+                        */
+                    }
+
+                    PG.renderTarget.SetData(pixels);
+                }
+            }
+        }
+
+        // This system is responsible for rendering particles in space
+        public static void ParticleGenerationDraw(SpriteBatch spriteBatch)
+        {
+            for (int i = 0; i < lastAllocatedIndex[(int)Components.ParticleGenerator]; i++)
+            {
+                ParticleGenerator PG = ParticleComps[i];
+                if (PG == null)
+                    continue;
+
+                Entity entity = Scene.ActiveScene.GetEntityWithID(PG.EntityID);
+
+                if (entity.Active && PG.Enabled)
+                {
+                    spriteBatch.Draw(PG.renderTarget, PG.renderTarget.GraphicsDevice.Viewport.Bounds, PG.SpawnColor);
                 }
             }
         }
