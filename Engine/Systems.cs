@@ -76,13 +76,13 @@ namespace DataOrientedEngine.Engine
         /// <param name="entity"></param>
         /// <param name="componentType"></param>
         /// <exception cref="System.Exception"></exception>
-        public static int RemoveComponent(Entity entity, Components componentType)
+        public static void RemoveComponent(Entity entity, Components componentType)
         {
             if (!entity.HasComponent(componentType))
                 throw new System.Exception("Entity does not have that component");
 
             freedComponents[(int)componentType].Push(entity.componentIndex[(int)componentType]);
-            return entity.componentIndex[(int)componentType];
+            entity.componentIndex[(int)componentType] = -1;
         }
 
         // Movement System
@@ -174,6 +174,7 @@ namespace DataOrientedEngine.Engine
             }
         }
 
+        //TODO: Needs Rework
         // This system is responsible for generating particles in space
         public static void ParticleGenerationUpdate(float deltatime)
         {

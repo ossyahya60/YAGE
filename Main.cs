@@ -15,7 +15,6 @@ namespace DataOrientedEngine
 
         private Scene mainScene;
         private Color clearColor;
-        private float roundedness = 0.5f;
         private SpriteFont Font;
 
         public Main()
@@ -55,8 +54,7 @@ namespace DataOrientedEngine
             */
 
             new Movement(simpleEntity.ID, 100, 150);
-            new ParticleGenerator(simpleEntity.ID, GraphicsDevice);
-            new Text(simpleEntity.ID, Font, Mouse.GetState().Position.ToString(), Vector2.Zero) { Color = Color.LightGreen };
+            new Text(simpleEntity.ID, Font, _graphics.PreferredBackBufferWidth.ToString(), Vector2.Zero) { Color = Color.LightGreen };
 
             base.Initialize();
         }
